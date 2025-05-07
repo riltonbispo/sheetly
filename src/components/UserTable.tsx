@@ -15,23 +15,14 @@ import { Input } from "@/components/ui/input"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
-import { z } from "zod"
 import { Trash2 } from 'lucide-react'
+import { exportToExcel } from '@/utils/exportToExcel'
+import { generateSchema, FormData } from "@/types/formTypes"
 
-
-const generateSchema = (columns: { key: string; label: string }[]) => {
-  const shape: Record<string, z.ZodTypeAny> = {}
-  columns.forEach((col) => {
-    shape[col.key] = z.string().optional()
-  })
-  return z.object({ rows: z.array(z.object(shape)) })
-}
 
 const UserTable = () => {
   const { columns, rows, removeRow, addRow } = useTableStore()
-
   const schema = generateSchema(columns)
-  type FormData = z.infer<typeof schema>
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -56,7 +47,7 @@ const UserTable = () => {
   }
 
   const onSubmit = (data: FormData) => {
-    console.log('Enviado com sucesso:', data)
+    exportToExcel(data.rows, 'file.xlsx')
   }
 
   return (
