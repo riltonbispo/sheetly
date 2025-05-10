@@ -9,12 +9,9 @@ import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import Link from "next/link"
 
 const formSchema = z.object({
   email: z.string().min(2).max(50).email(),
-  password: z.string().min(2),
-  // rememberMe: z.boolean().optional()
 })
 
 const AuthForm = () => {
@@ -50,57 +47,13 @@ const AuthForm = () => {
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
-                      <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
-                        Forgot password?
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <Input placeholder="******" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* <FormField
-                control={form.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="text-sm font-normal">
-                      Remember me
-                    </FormLabel>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <Button type="submit" className="w-full" onClick={form.handleSubmit(onSubmit)}>
-            sign In
+            Send Magic Link
           </Button>
-          <div className="text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
-              Sign up
-            </Link>
-          </div>
         </CardFooter>
       </Card>
     </div>
