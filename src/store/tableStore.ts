@@ -20,7 +20,7 @@ type TableState = {
 
 export const useTableStore = create<TableState>((set) => ({
   columns: [{ key: 'abc', label: 'abc' }, { key: 'def', label: 'def' }],
-  rows: [],
+  rows: [{}, {}],
 
   addColumn: (label: string) =>
     set((state) => {

@@ -15,10 +15,10 @@ import { Input } from "@/components/ui/input"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
-import { Trash2 } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import { exportToExcel } from '@/utils/exportToExcel'
 import { generateSchema, FormData } from "@/types/formTypes"
-
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 
 const UserTable = () => {
   const { columns, rows, removeRow, addRow } = useTableStore()
@@ -52,10 +52,10 @@ const UserTable = () => {
 
   return (
     <div className="max-w-5xl mx-auto mt-12">
-      <Form {...form}>
+      <Form {...form} >
         <NewColumnsForm />
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-8">
           <Table>
             <TableHeader>
               <TableRow>
@@ -87,17 +87,27 @@ const UserTable = () => {
                     </TableCell>
                   ))}
                   <TableCell className="text-center">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        remove(rowIndex)
-                        removeRow(rowIndex)
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuItem variant='destructive'
+                          onClick={() => {
+                            remove(rowIndex)
+                            removeRow(rowIndex)
+                          }}
+                        >
+                          Delete Row
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -113,7 +123,7 @@ const UserTable = () => {
               type="submit"
               onClick={form.handleSubmit(onSubmit)}
             >
-              Submit
+              Export To Excel
             </Button>
           </div>
         </form>

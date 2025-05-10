@@ -41,21 +41,21 @@ const NewColumnsForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-1/2 space-y-6 flex items-center justify-between gap-4">
         <FormField
           control={form.control}
           name="columnName"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full">
               <FormLabel>Column Name</FormLabel>
               <FormControl>
-                <Input placeholder="price" {...field} />
+                <Input placeholder="Name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Create Column</Button>
       </form>
     </Form>
   )
