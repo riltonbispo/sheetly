@@ -1,14 +1,14 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-// import { Checkbox } from "@/components/ui/checkbox"
 
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { signIn } from "next-auth/react"
 
 const formSchema = z.object({
   email: z.string().min(2).max(50).email(),
@@ -19,8 +19,10 @@ const AuthForm = () => {
     resolver: zodResolver(formSchema)
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await signIn("email", {
+      email: values.email
+    })
   }
 
   return (
@@ -47,14 +49,12 @@ const AuthForm = () => {
                   </FormItem>
                 )}
               />
+              <Button type="submit" className="w-full">
+                Send Magic Link
+              </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" onClick={form.handleSubmit(onSubmit)}>
-            Send Magic Link
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   )
