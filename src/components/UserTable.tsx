@@ -2,13 +2,13 @@
 
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from './ui/table'
 import { useTableStore } from '@/store/tableStore'
-import NewColumnsForm from './NewColumnsForm'
 import { Button } from './ui/button'
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -19,21 +19,42 @@ import { MoreHorizontal } from 'lucide-react'
 import { exportToExcel } from '@/utils/exportToExcel'
 import { generateSchema, FormData } from "@/types/formTypes"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { useSession } from "next-auth/react"
+import { z } from 'zod'
+
+const columnSchema = z.object({
+  columnName: z.string().min(2, {
+    message: "Column Name must be at least 2 characters.",
+  }),
+})
 
 const UserTable = () => {
-  const { columns, rows, removeRow, addRow } = useTableStore()
+  const { data: session } = useSession()
+  const { columns, rows, removeRow, addRow, addColumn } = useTableStore()
   const schema = generateSchema(columns)
 
-  const form = useForm<FormData>({
+  const rowForm = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { rows },
+    defaultValues: { rows, columns },
   })
 
-  const { control } = form
+  const columnForm = useForm<z.infer<typeof columnSchema>>({
+    resolver: zodResolver(columnSchema),
+    defaultValues: {
+      columnName: "",
+    },
+  })
 
-  const { fields, append, remove } = useFieldArray({
+  const { control } = rowForm
+
+  const { fields: rowFields, append: appendRow, remove: removeRowForm } = useFieldArray({
     control,
     name: 'rows',
+  })
+
+  const {fields: columnFields, append: appendColumn, remove: removeColumn} = useFieldArray({
+    control,
+    name: 'columns'
   })
 
   const handleAddRow = () => {
@@ -43,19 +64,63 @@ const UserTable = () => {
     }, {} as Record<string, string>)
 
     addRow(emptyRow)
-    append(emptyRow)
+    appendRow(emptyRow)
   }
 
-  const onSubmit = (data: FormData) => {
-    exportToExcel(data.rows, 'file.xlsx')
+  const handleAddColumn = (data: z.infer<typeof columnSchema>) => {
+    if (!data.columnName.trim()) return
+
+    const newColumn = {
+      key: data.columnName.trim().toLowerCase().replace(/\s+/g, '_'),
+      label: data.columnName.trim()
+    }
+
+    addColumn(data.columnName.trim())
+    appendColumn(newColumn) 
+
+    columnForm.reset()
   }
+
+  const onSubmit = async (data: FormData) => {
+    console.log(data)
+    await fetch('/api/table', {
+      method: 'POST',
+      body: JSON.stringify({
+        columns: data.columns,
+        rows: data.rows,
+        userId: session?.user?.id
+      }),
+    })
+    // exportToExcel(data.rows, 'file.xlsx')
+  }
+
 
   return (
     <div className="max-w-5xl mx-auto mt-12">
-      <Form {...form} >
-        <NewColumnsForm />
+      <Form {...columnForm}>
+        <form
+          onSubmit={columnForm.handleSubmit(handleAddColumn)}
+          className="w-1/2 space-y-6 flex items-center justify-between gap-4"
+        >
+          <FormField
+            control={columnForm.control}
+            name="columnName"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Column Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" onClick={columnForm.handleSubmit(handleAddColumn)}>Create Column</Button>
+        </form>
+      </Form>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-8">
+      <Form {...rowForm} >
+        <form onSubmit={rowForm.handleSubmit(onSubmit)} className="space-y-8 mt-8">
           <Table>
             <TableHeader>
               <TableRow>
@@ -68,7 +133,7 @@ const UserTable = () => {
             </TableHeader>
 
             <TableBody>
-              {fields.map((field, rowIndex) => (
+              {rowFields.map((field, rowIndex) => (
                 <TableRow key={field.id}>
                   {columns.map((col) => (
                     <TableCell key={col.key}>
@@ -100,7 +165,7 @@ const UserTable = () => {
 
                         <DropdownMenuItem variant='destructive'
                           onClick={() => {
-                            remove(rowIndex)
+                            removeRowForm(rowIndex)
                             removeRow(rowIndex)
                           }}
                         >
@@ -121,7 +186,7 @@ const UserTable = () => {
 
             <Button
               type="submit"
-              onClick={form.handleSubmit(onSubmit)}
+              onClick={rowForm.handleSubmit(onSubmit)}
             >
               Export To Excel
             </Button>

@@ -1,13 +1,5 @@
+import { Column, Row } from '@/types/table'
 import { create } from 'zustand'
-
-type Column = {
-  key: string
-  label: string
-}
-
-type Row = {
-  [key: string]: string
-}
 
 type TableState = {
   columns: Column[]
@@ -19,8 +11,8 @@ type TableState = {
 }
 
 export const useTableStore = create<TableState>((set) => ({
-  columns: [{ key: 'abc', label: 'abc' }, { key: 'def', label: 'def' }],
-  rows: [{}, {}],
+  columns: [],
+  rows: [],
 
   addColumn: (label: string) =>
     set((state) => {
