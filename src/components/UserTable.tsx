@@ -52,7 +52,7 @@ const UserTable = () => {
     name: 'rows',
   })
 
-  const {fields: columnFields, append: appendColumn, remove: removeColumn} = useFieldArray({
+  const { append: appendColumn } = useFieldArray({
     control,
     name: 'columns'
   })
@@ -76,22 +76,33 @@ const UserTable = () => {
     }
 
     addColumn(data.columnName.trim())
-    appendColumn(newColumn) 
+    appendColumn(newColumn)
 
     columnForm.reset()
   }
 
   const onSubmit = async (data: FormData) => {
-    console.log(data)
-    await fetch('/api/table', {
-      method: 'POST',
-      body: JSON.stringify({
-        columns: data.columns,
-        rows: data.rows,
-        userId: session?.user?.id
-      }),
-    })
-    // exportToExcel(data.rows, 'file.xlsx')
+    try {
+      const response = await fetch('/api/table', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Minha Tabela',
+          userId: session?.user?.id,
+          columns: data.columns,
+          rows: data.rows.map(row => ({ data: row })),
+        }),
+      })
+
+      exportToExcel(data.rows, 'file.xlsx')
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error(error)
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
 
