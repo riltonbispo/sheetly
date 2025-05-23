@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { toast } from "sonner"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
@@ -93,6 +94,8 @@ const UserTable = () => {
           rows: data.rows.map(row => ({ data: row })),
         }),
       })
+
+      toast("Table has been created.",)
 
       exportToExcel(data.rows, 'file.xlsx')
 
