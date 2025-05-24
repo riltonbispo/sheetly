@@ -18,16 +18,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
 import { MoreHorizontal } from 'lucide-react'
 import { exportToExcel } from '@/utils/exportToExcel'
-import { generateSchema, FormData } from "@/types/formTypes"
+import { generateSchema, FormData, columnSchema, columnFormType } from "@/types/formTypes"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { useSession } from "next-auth/react"
-import { z } from 'zod'
-
-const columnSchema = z.object({
-  columnName: z.string().min(2, {
-    message: "Column Name must be at least 2 characters.",
-  }),
-})
 
 const UserTable = () => {
   const { data: session } = useSession()
@@ -39,7 +32,7 @@ const UserTable = () => {
     defaultValues: { rows, columns },
   })
 
-  const columnForm = useForm<z.infer<typeof columnSchema>>({
+  const columnForm = useForm<columnFormType>({
     resolver: zodResolver(columnSchema),
     defaultValues: {
       columnName: "",
@@ -68,7 +61,7 @@ const UserTable = () => {
     appendRow(emptyRow)
   }
 
-  const handleAddColumn = (data: z.infer<typeof columnSchema>) => {
+  const handleAddColumn = (data: columnFormType) => {
     if (!data.columnName.trim()) return
 
     const newColumn = {
@@ -83,12 +76,13 @@ const UserTable = () => {
   }
 
   const onSubmit = async (data: FormData) => {
+    console.log(session?.user?.id, session?.user?.email)
     try {
       const response = await fetch('/api/table', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: 'Minha Tabela',
+          name: data.title,
           userId: session?.user?.id,
           columns: data.columns,
           rows: data.rows.map(row => ({ data: row })),
@@ -108,33 +102,47 @@ const UserTable = () => {
     }
   }
 
-
   return (
     <div className="max-w-5xl mx-auto mt-12">
-      <Form {...columnForm}>
-        <form
-          onSubmit={columnForm.handleSubmit(handleAddColumn)}
-          className="w-1/2 space-y-6 flex items-center justify-between gap-4"
-        >
+      <Form {...rowForm} >
+        <form onSubmit={rowForm.handleSubmit(onSubmit)} className="space-y-8 mt-8">
           <FormField
-            control={columnForm.control}
-            name="columnName"
+            control={rowForm.control}
+            name="title"
             render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Column Name</FormLabel>
+              <FormItem>
+                <FormLabel>Título da Tabela</FormLabel>
                 <FormControl>
-                  <Input placeholder="Name" {...field} />
+                  <Input placeholder="Ex: Tabela de Produtos" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" onClick={columnForm.handleSubmit(handleAddColumn)}>Create Column</Button>
-        </form>
-      </Form>
 
-      <Form {...rowForm} >
-        <form onSubmit={rowForm.handleSubmit(onSubmit)} className="space-y-8 mt-8">
+          <Form {...columnForm}>
+            <form
+              onSubmit={columnForm.handleSubmit(handleAddColumn)}
+              className="w-1/2 space-y-6 flex items-center justify-between gap-4"
+            >
+              <FormField
+                control={columnForm.control}
+                name="columnName"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Column Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" onClick={columnForm.handleSubmit(handleAddColumn)}>Create Column</Button>
+            </form>
+          </Form>
+
+          {/* ROWS FORM */}
           <Table>
             <TableHeader>
               <TableRow>
@@ -206,7 +214,6 @@ const UserTable = () => {
             </Button>
           </div>
         </form>
-
       </Form>
     </div>
   )
