@@ -34,3 +34,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Erro ao criar tabela' }, { status: 500 })
   }
 }
+export async function GET() {
+  try {
+    const tables = await prisma.table.findMany({
+      include: {
+        columns: true,
+        rows: true,
+      },
+    })
+    return NextResponse.json(tables)
+  } catch (error) {
+    console.error('[GET /api/tables] Erro:', error)
+    return NextResponse.json({ error: 'Erro ao buscar tabelas' }, { status: 500 })
+  }
+}

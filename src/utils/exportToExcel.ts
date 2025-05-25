@@ -1,8 +1,8 @@
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { FormData } from "@/types/formTypes"
+import { Row } from "@/types/table";
 
-export const exportToExcel = (data: FormData["rows"], filename = "dados.xlsx") => {
+export const exportToExcel = (data: Record<string, string>[] | Row[], filename = "dados.xlsx") => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
 
