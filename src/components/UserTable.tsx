@@ -78,7 +78,7 @@ const UserTable = () => {
   const onSubmit = async (data: FormData) => {
     console.log(session?.user?.id, session?.user?.email)
     try {
-      const response = await fetch('/api/table', {
+      const response = await fetch('/api/tables', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
