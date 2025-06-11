@@ -1,4 +1,4 @@
-import { Column, Row } from '@/types/table'
+import { Column, Row, Table } from '@/types/table'
 import { create } from 'zustand'
 
 type TableState = {
@@ -8,6 +8,12 @@ type TableState = {
   addRow: (row: Row) => void
   updateCell: (rowIndex: number, key: string, value: string) => void,
   removeRow: (index: number) => void
+}
+
+type TableListState = {
+  tables: Table[]
+  setTables: (tables: Table[]) => void
+  removeTable: (id: string) => void
 }
 
 export const useTableStore = create<TableState>((set) => ({
@@ -39,5 +45,14 @@ export const useTableStore = create<TableState>((set) => ({
     return { rows: updated }
   }),
 
-  removeRow: (index: number) => set(state => ({rows: state.rows.filter((_, i) => i !== index)}))
+  removeRow: (index: number) => set(state => ({ rows: state.rows.filter((_, i) => i !== index) }))
+}))
+
+export const useTableListStore = create<TableListState>((set) => ({
+  tables: [],
+  setTables: (tables) => set({ tables }),
+  removeTable: (id) =>
+    set((state) => ({
+      tables: state.tables.filter((table) => table.id !== id),
+    })),
 }))
